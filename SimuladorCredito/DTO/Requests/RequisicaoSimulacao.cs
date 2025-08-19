@@ -2,7 +2,7 @@
 {
     public class RequisicaoSimulacao
     {
-        public double valorDesejado { get; set; }
+        public decimal valorDesejado { get; set; }
         public int prazo { get; set; }
     }
 }

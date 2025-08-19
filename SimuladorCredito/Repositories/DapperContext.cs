@@ -12,7 +12,7 @@ public class DapperContext
     public DapperContext(IConfiguration configuration)
     {
         _configuration = configuration;
-        _connectionString = _configuration["DataBase:ConnectionStrings"];
+        _connectionString = _configuration["DataBase:DbSimulacaoLocal:ConnectionString"] ?? "";
         _databasePath = GetDatabasePath(_connectionString);
 
         EnsureDatabaseExists();
