@@ -10,6 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<DapperContext>();
+builder.Services.AddSingleton<DbHackaThonContext>();
 
 var app = builder.Build();
 
