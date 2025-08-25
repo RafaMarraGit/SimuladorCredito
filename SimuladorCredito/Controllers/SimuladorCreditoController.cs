@@ -16,19 +16,19 @@ namespace SimuladorCredito.Controllers
     [ApiController]
     public class SimuladorCreditoController : ControllerBase
     {
-        private readonly DapperContext _dapperContext;
         private readonly ProdutosStaticService _produtosStaticService;
         private readonly CalculoSimulacaoService _calculoSimulacaoService;
+        private readonly SimulacaoRepository _simulacaoRepository;
 
         public SimuladorCreditoController(
-            DapperContext dapperContext,
             ProdutosStaticService produtosStaticService,
-            CalculoSimulacaoService calculoSimulacaoService
+            CalculoSimulacaoService calculoSimulacaoService,
+            SimulacaoRepository simulacaoRepository
             )
         {
-            _dapperContext = dapperContext;
             _produtosStaticService = produtosStaticService;
             _calculoSimulacaoService = calculoSimulacaoService;
+            _simulacaoRepository = simulacaoRepository;
         }
 
 
@@ -59,8 +59,8 @@ namespace SimuladorCredito.Controllers
                     {
                         tipo = "SAC",
                         parcelas = _calculoSimulacaoService.CalcularSAC(
-                            requisicao.valorDesejado, 
-                            requisicao.prazo, 
+                            requisicao.valorDesejado,
+                            requisicao.prazo,
                             produtoValido.PC_TAXA_JUROS
                         )
                     },
@@ -68,19 +68,41 @@ namespace SimuladorCredito.Controllers
                     {
                         tipo = "PRICE",
                         parcelas = _calculoSimulacaoService.CalcularPRICE(
-                            requisicao.valorDesejado, 
-                            requisicao.prazo, 
+                            requisicao.valorDesejado,
+                            requisicao.prazo,
                             produtoValido.PC_TAXA_JUROS
                         )
                     }
                 }
             };
 
-
+            Task.Run(() => _simulacaoRepository.InserirSimulacaoAsync(resposta));
 
 
             return Ok(resposta);
         }
+
+        [HttpGet]
+        [Produces(MediaTypeNames.Application.Json)]
+        public async Task<ActionResult<IEnumerable<RespostaSimutacao>>> ListarSimulacoes(
+            [FromQuery] int pagina = 1,
+            [FromQuery] int quantidadePorPagina = 10,
+            [FromQuery] bool parcelas = false)
+        {
+            var simulacoes = await _simulacaoRepository.ObterSimulacoesPaginadasAsync(pagina, quantidadePorPagina, parcelas);
+            return Ok(simulacoes);
+        }
+
+        [HttpGet("AgrupadoPorDia")]
+        [Produces(MediaTypeNames.Application.Json)]
+        public async Task<ActionResult> ListarSimulacoesAgrupadasPorDia(
+            [FromQuery] DateTime? dataInicio = null,
+            [FromQuery] DateTime? dataFim = null)
+        {
+            var resultado = await _simulacaoRepository.ObterValoresSimuladosPorDiaAsync(dataInicio, dataFim);
+            return Ok(resultado);
+        }
+
 
     }
 }

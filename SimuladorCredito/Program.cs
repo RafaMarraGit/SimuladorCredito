@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Localization;
-using SimuladorCredito.Extensions;
 using SimuladorCredito.Repositories;
 using SimuladorCredito.Services;
 using SimuladorCredito.Services.Cache;
@@ -22,7 +21,8 @@ builder.Services.AddSwaggerGen();
 
 
 
-builder.Services.AddSingleton<DapperContext>();
+builder.Services.AddSingleton<SimulacaoContext>();
+builder.Services.AddSingleton<SimulacaoRepository>();
 builder.Services.AddSingleton<DbHackaThonContext>();
 builder.Services.AddSingleton<ProdutosStaticService>();
 builder.Services.AddSingleton<CalculoSimulacaoService>();
