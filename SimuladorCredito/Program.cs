@@ -5,6 +5,9 @@ using SimuladorCredito.Services.Cache;
 using System.Globalization;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Metrics;
+using SimuladorCredito.Util;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +19,6 @@ builder.Services.AddOpenTelemetry()
         metrics
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("SimuladorCredito"))
             .AddAspNetCoreInstrumentation();
-            //.AddPrometheusExporter(); // Exporta para Prometheus
     });
 
 builder.Services.AddSingleton<TelemetryService>();
@@ -28,7 +30,7 @@ CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 
-// Add services to the container.
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -43,6 +45,11 @@ builder.Services.AddSingleton<DbHackaThonContext>();
 builder.Services.AddSingleton<ProdutosStaticService>();
 builder.Services.AddSingleton<CalculoSimulacaoService>();
 
+
+
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("Database Simulacao Connection")
+    .AddCheck<DbHackaThonHealthCheck>("Database HackaThon Connection");
 
 
 
@@ -85,6 +92,8 @@ app.UseHttpsRedirection();
 
 app.MapControllers();
 
-
-
+app.UseHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 app.Run();

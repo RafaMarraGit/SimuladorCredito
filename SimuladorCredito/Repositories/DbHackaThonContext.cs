@@ -2,26 +2,31 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using System.IO;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace SimuladorCredito.Repositories;
 
 public class DbHackaThonContext
 {
     private readonly IConfiguration _configuration;
+    private readonly ILogger<DbHackaThonContext> _logger;
     private readonly string _sqlServerConnectionString;
     private readonly string _sqliteDatabasePath;
 
-    public DbHackaThonContext(IConfiguration configuration)
+    public DbHackaThonContext(IConfiguration configuration, ILogger<DbHackaThonContext> logger)
     {
         _configuration = configuration;
+        _logger = logger;
 
         var password = _configuration["DataBase:DbHackaThon:Password"];
         _sqlServerConnectionString = _configuration["DataBase:DbHackaThon:ConnectionString"]?.Replace("{password}", password) ?? "";
 
-        // Define o caminho do banco local "hackthon.db"
         _sqliteDatabasePath = Path.Combine(Directory.GetCurrentDirectory(), "hackthon.db");
 
+        _logger.LogInformation("Inicializando DbHackaThonContext...");
         EnsureLocalDatabaseExists();
+        _logger.LogInformation("DbHackaThonContext inicializado.");
     }
 
     public IDbConnection CreateConnection()
@@ -30,12 +35,24 @@ public class DbHackaThonContext
         {
             var connection = new SqlConnection(_sqlServerConnectionString);
             connection.Open(); // Testa a conexão com o SQL Server
+            _logger.LogInformation("Conexão com SQL Server estabelecida.");
             return connection;
         }
-        catch
+        catch (Exception ex)
         {
-            // Caso a conexão com o SQL Server falhe, usa o banco SQLite local
-            return new SqliteConnection($"Data Source={_sqliteDatabasePath}");
+            _logger.LogWarning(ex, "Falha ao conectar ao SQL Server. Usando SQLite local.");
+            var sqliteConnection = new SqliteConnection($"Data Source={_sqliteDatabasePath}");
+            try
+            {
+                sqliteConnection.Open();
+                _logger.LogInformation("Conexão com SQLite local estabelecida.");
+            }
+            catch (Exception sqliteEx)
+            {
+                _logger.LogError(sqliteEx, "Falha ao conectar ao SQLite local.");
+                throw;
+            }
+            return sqliteConnection;
         }
     }
 
@@ -43,12 +60,18 @@ public class DbHackaThonContext
     {
         if (!File.Exists(_sqliteDatabasePath))
         {
+            _logger.LogInformation("Criando banco SQLite local...");
             using (var connection = new SqliteConnection($"Data Source={_sqliteDatabasePath}"))
             {
                 connection.Open();
                 CreateTables(connection);
                 SeedData(connection);
             }
+            _logger.LogInformation("Banco SQLite local criado com sucesso.");
+        }
+        else
+        {
+            _logger.LogInformation("Banco SQLite local já existe.");
         }
     }
 
@@ -66,12 +89,12 @@ public class DbHackaThonContext
             );
         ";
 
-
         using (var command = connection.CreateCommand())
         {
             command.CommandText = createTableQuery;
             command.ExecuteNonQuery();
         }
+        _logger.LogInformation("Tabela PRODUTO criada/verificada.");
     }
 
     private void SeedData(SqliteConnection connection)
@@ -89,5 +112,6 @@ public class DbHackaThonContext
             command.CommandText = insertDataQuery;
             command.ExecuteNonQuery();
         }
+        _logger.LogInformation("Dados de PRODUTO inseridos.");
     }
 }

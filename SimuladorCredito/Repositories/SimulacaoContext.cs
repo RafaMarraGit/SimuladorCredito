@@ -1,4 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Data;
 
 namespace SimuladorCredito.Repositories;
@@ -6,12 +8,15 @@ namespace SimuladorCredito.Repositories;
 public class SimulacaoContext
 {
     private readonly IConfiguration _configuration;
+    private readonly ILogger<SimulacaoContext> _logger;
     private readonly string _connectionString;
     private readonly string _databasePath;
 
-    public SimulacaoContext(IConfiguration configuration)
+    public SimulacaoContext(IConfiguration configuration, ILogger<SimulacaoContext> logger)
     {
         _configuration = configuration;
+        _logger = logger;
+
         var dbPath = _configuration["DataBase:DbSimulacaoLocal:ConnectionString"] ?? "simulador.db";
 
         if (!Path.IsPathRooted(dbPath))
@@ -19,30 +24,49 @@ public class SimulacaoContext
             var basePath = AppContext.BaseDirectory;
             dbPath = Path.Combine(basePath, dbPath);
         }
-        dbPath = Path.GetFullPath(dbPath); 
+        dbPath = Path.GetFullPath(dbPath);
 
         _connectionString = $"Data Source={dbPath}";
         _databasePath = dbPath;
 
+        _logger.LogInformation("Inicializando SimulacaoContext...");
         EnsureDatabaseExists();
+        _logger.LogInformation("SimulacaoContext inicializado.");
     }
 
-
     public IDbConnection CreateConnection()
-        => new SqliteConnection(_connectionString);
+    {
+        try
+        {
+            var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+            _logger.LogInformation("Conexão com SQLite estabelecida.");
+            return connection;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Falha ao conectar ao SQLite.");
+            throw;
+        }
+    }
 
     private void EnsureDatabaseExists()
     {
         if (!File.Exists(_databasePath))
         {
+            _logger.LogInformation("Criando banco SQLite local...");
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
                 CreateTables(connection);
             }
+            _logger.LogInformation("Banco SQLite local criado com sucesso.");
+        }
+        else
+        {
+            _logger.LogInformation("Banco SQLite local já existe.");
         }
     }
-
 
     private void CreateTables(SqliteConnection connection)
     {
@@ -78,6 +102,7 @@ public class SimulacaoContext
             command.CommandText = createTableQuery;
             command.ExecuteNonQuery();
         }
+        _logger.LogInformation("Tabelas criadas/verificadas.");
     }
 
     private string GetDatabasePath(string connectionString)
@@ -87,4 +112,3 @@ public class SimulacaoContext
         return connectionString.Substring(startIndex).Trim();
     }
 }
-
