@@ -10,14 +10,14 @@ API desenvolvida em .NET 8 para simulação de crédito, utilizando SQLite e SQL
    docker build -t simulador-credito .
 
 2. **Execute o container:**
-   docker run -d -p 5000:80 --name simulador-credito simulador-credito
+   docker run -p 8080:8080 simuladorcredito
 
 
-3. **Acesse a API:**
-   - Swagger: [http://localhost:5000/swagger](http://localhost:5000/swagger)
-   - Health Check: [http://localhost:5000/health](http://localhost:5000/health)
+4. **Acesse a API:**
+   - Swagger: [http://localhost:8080/swagger](http://localhost:8080/swagger)
+   - Health Check: [http://localhost:8080/health](http://localhost:8080/health)
 
-> Configure as variáveis de ambiente necessárias para conexão com o banco de dados, caso utilize SQL Server.
+> Configuração de conexão ao banco de dados SQL Server hackathon em appsettings.js apenas por se tratar de projeto desafio, não seguindo assim regras de segurança, localmente estava usando user-secrets em DES ou PRD user keyValts.
 
 ---
 
@@ -34,7 +34,7 @@ O Dapper é utilizado como micro-ORM para acesso aos dados. Ele se destaca por s
 ---
 
 ## Observabilidade com OpenTelemetry
-
+- End-point: [http://localhost:8080/Telemetria](http://localhost:8080/Telemetria)
 A aplicação utiliza o OpenTelemetry para coleta de métricas e rastreamento de requisições. Isso permite:
 - Monitorar o desempenho da API em tempo real.
 - Identificar gargalos e pontos de falha rapidamente.
