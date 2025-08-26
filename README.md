@@ -34,12 +34,12 @@ O Dapper é utilizado como micro-ORM para acesso aos dados. Ele se destaca por s
 ---
 
 ## Observabilidade com OpenTelemetry
-- End-point: [http://localhost:8080/Telemetria](http://localhost:8080/Telemetria)
+
 A aplicação utiliza o OpenTelemetry para coleta de métricas e rastreamento de requisições. Isso permite:
 - Monitorar o desempenho da API em tempo real.
 - Identificar gargalos e pontos de falha rapidamente.
 - Integrar facilmente com sistemas de monitoramento como Prometheus, Jaeger, entre outros.
-
+- End-point: [http://localhost:8080/Telemetria](http://localhost:8080/Telemetria)
 ---
 
 ## Health Check
