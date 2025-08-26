@@ -36,24 +36,26 @@ namespace SimuladorCredito.Controllers
         [Produces(MediaTypeNames.Application.Json)]
         public async Task<ActionResult<RespostaSimutacao>> SimularCredito(RequisicaoSimulacao requisicao)
         {
-            var produtoValido = _produtosStaticService.List().FirstOrDefault(p =>
+            try
+            {
+                var produtoValido = _produtosStaticService.List().FirstOrDefault(p =>
                 requisicao.valorDesejado >= p.VR_MINIMO &&
                 (p.VR_MAXIMO == null || requisicao.valorDesejado <= p.VR_MAXIMO) &&
                 requisicao.prazo >= p.NU_MINIMO_MESES &&
                 (p.NU_MAXIMO_MESES == null || requisicao.prazo <= p.NU_MAXIMO_MESES)
             );
 
-            if (produtoValido == null)
-                return BadRequest("Nenhum produto disponível para os parâmetros informados.");
+                if (produtoValido == null)
+                    return BadRequest("Nenhum produto disponível para os parâmetros informados.");
 
 
-            var resposta = new RespostaSimutacao
-            {
-                idSimulacao = 1,
-                codigoProduto = produtoValido.CO_PRODUTO,
-                descricaoProduto = produtoValido.NO_PRODUTO,
-                taxaJuros = produtoValido.PC_TAXA_JUROS,
-                resultadoSimulacao = new List<ResultadoSimulacao>
+                var resposta = new RespostaSimutacao
+                {
+                    idSimulacao = 1,
+                    codigoProduto = produtoValido.CO_PRODUTO,
+                    descricaoProduto = produtoValido.NO_PRODUTO,
+                    taxaJuros = produtoValido.PC_TAXA_JUROS,
+                    resultadoSimulacao = new List<ResultadoSimulacao>
                 {
                     new ResultadoSimulacao
                     {
@@ -74,12 +76,19 @@ namespace SimuladorCredito.Controllers
                         )
                     }
                 }
-            };
+                };
 
-            Task.Run(() => _simulacaoRepository.InserirSimulacaoAsync(resposta));
+                Task.Run(() => _simulacaoRepository.InserirSimulacaoAsync(resposta));
 
 
-            return Ok(resposta);
+                return Ok(resposta);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+
+            }
+            
         }
 
         [HttpGet]

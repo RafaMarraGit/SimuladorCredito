@@ -1,30 +1,24 @@
-﻿# Acesse https://aka.ms/customizecontainer para saber como personalizar seu contêiner de depuração e como o Visual Studio usa este Dockerfile para criar suas imagens para uma depuração mais rápida.
+﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 
-# Esta fase é usada durante a execução no VS no modo rápido (Padrão para a configuração de Depuração)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
+# Garante permissão de escrita para o usuário da aplicação
+ARG APP_UID
+RUN chown -R ${APP_UID:-1000}:${APP_UID:-1000} /app
 
-# Esta fase é usada para compilar o projeto de serviço
+USER $APP_UID
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["SimuladorCredito/SimuladorCredito.csproj", "SimuladorCredito/"]
-RUN dotnet restore "./SimuladorCredito/SimuladorCredito.csproj"
 COPY . .
-WORKDIR "/src/SimuladorCredito"
-RUN dotnet build "./SimuladorCredito.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src"
+RUN dotnet restore "SimuladorCredito.csproj"
+RUN dotnet publish "SimuladorCredito.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Esta fase é usada para publicar o projeto de serviço a ser copiado para a fase final
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./SimuladorCredito.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-# Esta fase é usada na produção ou quando executada no VS no modo normal (padrão quando não está usando a configuração de Depuração)
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "SimuladorCredito.dll"]

@@ -3,8 +3,24 @@ using SimuladorCredito.Repositories;
 using SimuladorCredito.Services;
 using SimuladorCredito.Services.Cache;
 using System.Globalization;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Metrics;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("SimuladorCredito"))
+            .AddAspNetCoreInstrumentation();
+            //.AddPrometheusExporter(); // Exporta para Prometheus
+    });
+
+builder.Services.AddSingleton<TelemetryService>();
+
 
 
 // Configurar a cultura padrão para ISO 8601
@@ -27,6 +43,9 @@ builder.Services.AddSingleton<DbHackaThonContext>();
 builder.Services.AddSingleton<ProdutosStaticService>();
 builder.Services.AddSingleton<CalculoSimulacaoService>();
 
+
+
+
 var app = builder.Build();
 
 var defaultCulture = "pt-BR";
@@ -39,16 +58,33 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 });
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
+
+app.Use(async (context, next) =>
+{
+    var telemetry = context.RequestServices.GetRequiredService<SimuladorCredito.Services.TelemetryService>();
+    var start = DateTime.UtcNow;
+    await next.Invoke();
+    var duration = (DateTime.UtcNow - start).TotalMilliseconds;
+    var statusCode = context.Response.StatusCode;
+    var path = context.Request.Path;
+    var method = context.Request.Method;
+    telemetry.IncrementRequestCount();
+    telemetry.RegisterRequest(start, duration, statusCode, path, method);
+});
+
+
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+//app.UseAuthorization();
 
 app.MapControllers();
+
+
 
 app.Run();

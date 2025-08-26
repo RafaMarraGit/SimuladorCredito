@@ -12,28 +12,37 @@ public class SimulacaoContext
     public SimulacaoContext(IConfiguration configuration)
     {
         _configuration = configuration;
-        _connectionString = _configuration["DataBase:DbSimulacaoLocal:ConnectionString"] ?? "";
-        _connectionString = Path.Combine(Directory.GetCurrentDirectory(), _connectionString);
-        _databasePath = GetDatabasePath(_connectionString);
+        var dbPath = _configuration["DataBase:DbSimulacaoLocal:ConnectionString"] ?? "simulador.db";
+
+        if (!Path.IsPathRooted(dbPath))
+        {
+            var basePath = AppContext.BaseDirectory;
+            dbPath = Path.Combine(basePath, dbPath);
+        }
+        dbPath = Path.GetFullPath(dbPath); 
+
+        _connectionString = $"Data Source={dbPath}";
+        _databasePath = dbPath;
 
         EnsureDatabaseExists();
     }
 
+
     public IDbConnection CreateConnection()
-        => new SqliteConnection($"Data Source={_connectionString}");
+        => new SqliteConnection(_connectionString);
 
     private void EnsureDatabaseExists()
     {
-        if (!File.Exists(_connectionString))
+        if (!File.Exists(_databasePath))
         {
-            // Cria o arquivo do banco de dados
-            using (var connection = new SqliteConnection($"Data Source={_connectionString}"))
+            using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
                 CreateTables(connection);
             }
         }
     }
+
 
     private void CreateTables(SqliteConnection connection)
     {

@@ -19,7 +19,7 @@ public class DbHackaThonContext
         _sqlServerConnectionString = _configuration["DataBase:DbHackaThon:ConnectionString"]?.Replace("{password}", password) ?? "";
 
         // Define o caminho do banco local "hackthon.db"
-        _sqliteDatabasePath = Path.Combine(Directory.GetCurrentDirectory(), "Repositories", "hackthon.db");
+        _sqliteDatabasePath = Path.Combine(Directory.GetCurrentDirectory(), "hackthon.db");
 
         EnsureLocalDatabaseExists();
     }
