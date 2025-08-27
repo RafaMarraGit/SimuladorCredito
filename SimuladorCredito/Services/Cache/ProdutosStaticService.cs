@@ -4,9 +4,13 @@ using SimuladorCredito.Repositories;
 
 namespace SimuladorCredito.Services.Cache;
 
+public interface IProdutosStaticService
+{
+    List<Produto> List();
+}
 
 
-public class ProdutosStaticService : IDisposable
+public class ProdutosStaticService : IProdutosStaticService, IDisposable
 {
     private static List<Produto> _produtos = new();
     private static readonly object _lock = new();

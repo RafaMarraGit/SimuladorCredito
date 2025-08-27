@@ -16,17 +16,17 @@ namespace SimuladorCredito.Controllers
     [ApiController]
     public class SimuladorCreditoController : ControllerBase
     {
-        private readonly ProdutosStaticService _produtosStaticService;
-        private readonly CalculoSimulacaoService _calculoSimulacaoService;
-        private readonly SimulacaoRepository _simulacaoRepository;
-        private readonly EventHubStreamingService _eventHubStreamingService;
+        private readonly IProdutosStaticService _produtosStaticService;
+        private readonly ICalculoSimulacaoService _calculoSimulacaoService;
+        private readonly ISimulacaoRepository _simulacaoRepository;
+        private readonly IEventHubStreamingService _eventHubStreamingService;
         private readonly ILogger<SimuladorCreditoController> _logger;
 
         public SimuladorCreditoController(
-            ProdutosStaticService produtosStaticService,
-            CalculoSimulacaoService calculoSimulacaoService,
-            SimulacaoRepository simulacaoRepository,
-            EventHubStreamingService eventHubStreamingService,
+            IProdutosStaticService produtosStaticService,
+            ICalculoSimulacaoService calculoSimulacaoService,
+            ISimulacaoRepository simulacaoRepository,
+            IEventHubStreamingService eventHubStreamingService,
             ILogger<SimuladorCreditoController> logger
             )
         {

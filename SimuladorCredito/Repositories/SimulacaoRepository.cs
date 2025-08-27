@@ -4,7 +4,15 @@ using SimuladorCredito.DTO.Responses;
 
 namespace SimuladorCredito.Repositories;
 
-public class SimulacaoRepository
+public interface ISimulacaoRepository
+{
+    Task<long> InserirSimulacaoAsync(RespostaSimulacao respostaSimulacao);
+    Task<IEnumerable<RespostaSimulacao>> ObterSimulacoesPaginadasAsync(int pagina, int quantidadePorPagina, bool incluirParcelas);
+    Task<IEnumerable<object>> ObterValoresSimuladosPorDiaAsync(DateTime? dataInicio, DateTime? dataFim);
+}
+
+
+public class SimulacaoRepository : ISimulacaoRepository
 {
     private readonly SimulacaoContext _simulacaoContext;
     private readonly ILogger<SimulacaoRepository> _logger;

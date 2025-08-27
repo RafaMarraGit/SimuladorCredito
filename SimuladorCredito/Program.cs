@@ -40,11 +40,11 @@ builder.Services.AddSwaggerGen();
 
 
 builder.Services.AddSingleton<SimulacaoContext>();
-builder.Services.AddSingleton<SimulacaoRepository>();
+builder.Services.AddSingleton<ISimulacaoRepository, SimulacaoRepository>();
 builder.Services.AddSingleton<DbHackaThonContext>();
-builder.Services.AddSingleton<ProdutosStaticService>();
-builder.Services.AddSingleton<CalculoSimulacaoService>();
-builder.Services.AddSingleton<EventHubStreamingService>();
+builder.Services.AddSingleton<IProdutosStaticService, ProdutosStaticService>();
+builder.Services.AddSingleton<ICalculoSimulacaoService, CalculoSimulacaoService>();
+builder.Services.AddSingleton<IEventHubStreamingService, EventHubStreamingService>();
 
 
 

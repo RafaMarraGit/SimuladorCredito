@@ -4,7 +4,14 @@ using SimuladorCredito.Model;
 
 namespace SimuladorCredito.Services;
 
-public class CalculoSimulacaoService
+public interface ICalculoSimulacaoService
+{
+    List<Parcela> CalcularSAC(decimal valor, int prazo, decimal taxa);
+    List<Parcela> CalcularPRICE(decimal valor, int prazo, decimal taxa);
+    RespostaSimulacao GerarRespostaSimulacao(RequisicaoSimulacao requisicao, Produto produto);
+}
+
+public class CalculoSimulacaoService : ICalculoSimulacaoService
 {
 
     public List<Parcela> CalcularSAC(decimal valor, int prazo, decimal taxa)
