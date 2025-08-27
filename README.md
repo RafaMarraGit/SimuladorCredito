@@ -10,7 +10,7 @@ API desenvolvida em .NET 8 para simulação de crédito, utilizando SQLite e SQL
    docker build -t simulador-credito .
 
 2. **Execute o container:**
-   docker run -p 8080:8080 simuladorcredito
+   docker run -p 8080:8080 simulador-credito
 
 
 4. **Acesse a API:**
