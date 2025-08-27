@@ -12,7 +12,7 @@ public class TelemetriaController : ControllerBase
         _telemetryService = telemetryService;
     }
 
-    [HttpGet("telemetria")]
+    [HttpGet()]
     public IActionResult GetTelemetry()
     {
         var result = new

@@ -71,31 +71,31 @@ public class SimulacaoContext
     private void CreateTables(SqliteConnection connection)
     {
         var createTableQuery = @"
-        CREATE TABLE IF NOT EXISTS RespostaSimutacao (
-            idSimulacao INTEGER PRIMARY KEY AUTOINCREMENT,
-            codigoProduto INTEGER NOT NULL,
-            descricaoProduto TEXT NOT NULL,
-            taxaJuros REAL NOT NULL,
-            dataSimulacao TEXT NOT NULL
-        );
+            CREATE TABLE IF NOT EXISTS RespostaSimulacao (
+                idSimulacao INTEGER PRIMARY KEY AUTOINCREMENT,
+                codigoProduto INTEGER NOT NULL,
+                descricaoProduto TEXT NOT NULL,
+                taxaJuros REAL NOT NULL,
+                dataSimulacao TEXT NOT NULL
+            );
 
-        CREATE TABLE IF NOT EXISTS ResultadoSimulacao (
-            idResultado INTEGER PRIMARY KEY AUTOINCREMENT,
-            idSimulacao INTEGER NOT NULL,
-            tipo TEXT NOT NULL,
-            FOREIGN KEY (idSimulacao) REFERENCES RespostaSimutacao(idSimulacao)
-        );
+            CREATE TABLE IF NOT EXISTS ResultadoSimulacao (
+                idResultado INTEGER PRIMARY KEY AUTOINCREMENT,
+                idSimulacao INTEGER NOT NULL,
+                tipo TEXT NOT NULL,
+                FOREIGN KEY (idSimulacao) REFERENCES RespostaSimulacao(idSimulacao)
+            );
 
-        CREATE TABLE IF NOT EXISTS Parcela (
-            idParcela INTEGER PRIMARY KEY AUTOINCREMENT,
-            idResultado INTEGER NOT NULL,
-            numero INTEGER NOT NULL,
-            valorAmortizacao REAL NOT NULL,
-            valorJuros REAL NOT NULL,
-            valorPrestacao REAL NOT NULL,
-            FOREIGN KEY (idResultado) REFERENCES ResultadoSimulacao(idResultado)
-        );
-    ";
+            CREATE TABLE IF NOT EXISTS Parcela (
+                idParcela INTEGER PRIMARY KEY AUTOINCREMENT,
+                idResultado INTEGER NOT NULL,
+                numero INTEGER NOT NULL,
+                valorAmortizacao REAL NOT NULL,
+                valorJuros REAL NOT NULL,
+                valorPrestacao REAL NOT NULL,
+                FOREIGN KEY (idResultado) REFERENCES ResultadoSimulacao(idResultado)
+            );
+        ";
 
         using (var command = connection.CreateCommand())
         {
@@ -105,10 +105,5 @@ public class SimulacaoContext
         _logger.LogInformation("Tabelas criadas/verificadas.");
     }
 
-    private string GetDatabasePath(string connectionString)
-    {
-        var dataSourcePrefix = "Data Source=";
-        var startIndex = connectionString.IndexOf(dataSourcePrefix) + dataSourcePrefix.Length;
-        return connectionString.Substring(startIndex).Trim();
-    }
+   
 }

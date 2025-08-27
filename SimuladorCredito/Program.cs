@@ -44,6 +44,7 @@ builder.Services.AddSingleton<SimulacaoRepository>();
 builder.Services.AddSingleton<DbHackaThonContext>();
 builder.Services.AddSingleton<ProdutosStaticService>();
 builder.Services.AddSingleton<CalculoSimulacaoService>();
+builder.Services.AddSingleton<EventHubStreamingService>();
 
 
 

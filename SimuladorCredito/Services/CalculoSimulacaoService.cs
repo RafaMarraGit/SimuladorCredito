@@ -1,4 +1,6 @@
-﻿using SimuladorCredito.DTO.Responses;
+﻿using SimuladorCredito.DTO.Requests;
+using SimuladorCredito.DTO.Responses;
+using SimuladorCredito.Model;
 
 namespace SimuladorCredito.Services;
 
@@ -46,4 +48,38 @@ public class CalculoSimulacaoService
         }
         return parcelas;
     }
+
+    public RespostaSimulacao GerarRespostaSimulacao(RequisicaoSimulacao requisicao, Produto produto)
+    {
+        return new RespostaSimulacao
+        {
+            idSimulacao = 0,
+            codigoProduto = produto.CO_PRODUTO,
+            descricaoProduto = produto.NO_PRODUTO,
+            taxaJuros = produto.PC_TAXA_JUROS,
+            dataSimulacao = DateTime.UtcNow,
+            resultadoSimulacao = new List<ResultadoSimulacao>
+            {
+                new ResultadoSimulacao
+                {
+                    tipo = "SAC",
+                    parcelas = CalcularSAC(
+                        requisicao.valorDesejado,
+                        requisicao.prazo,
+                        produto.PC_TAXA_JUROS
+                    )
+                },
+                new ResultadoSimulacao
+                {
+                    tipo = "PRICE",
+                    parcelas = CalcularPRICE(
+                        requisicao.valorDesejado,
+                        requisicao.prazo,
+                        produto.PC_TAXA_JUROS
+                    )
+                }
+            }
+        };
+    }
+
 }

@@ -1,8 +1,8 @@
 ﻿namespace SimuladorCredito.DTO.Responses;
 
-public class RespostaSimutacao
+public class RespostaSimulacao
 {
-    public int idSimulacao { get; set; }
+    public Int64 idSimulacao { get; set; }
     public int codigoProduto { get; set; }
     public string descricaoProduto { get; set; }
     public decimal taxaJuros { get; set; }

@@ -16,16 +16,15 @@ public class SimulacaoRepository
     }
 
 
-    public async Task InserirSimulacaoAsync(RespostaSimutacao respostaSimulacao)
+    public async Task<Int64> InserirSimulacaoAsync(RespostaSimulacao respostaSimulacao)
     {
         try
         {
-
             using var connection = _simulacaoContext.CreateConnection();
 
             // Insere Simulacao
             var simulacaoId = await connection.ExecuteScalarAsync<long>(
-                @"INSERT INTO RespostaSimutacao (CodigoProduto, DescricaoProduto, TaxaJuros, DataSimulacao)
+                @"INSERT INTO RespostaSimulacao (CodigoProduto, DescricaoProduto, TaxaJuros, DataSimulacao)
                   VALUES (@CodigoProduto, @DescricaoProduto, @TaxaJuros, @DataSimulacao);
                   SELECT last_insert_rowid();",
                 new
@@ -67,15 +66,18 @@ public class SimulacaoRepository
                         });
                 }
             }
+                
+            return simulacaoId;
         }
         catch (Exception ex)
         {
             _logger.LogError("{message} => {data}", ex.Message, DateTime.UtcNow);
+            throw; 
         }
     }
 
 
-    public async Task<IEnumerable<RespostaSimutacao>> ObterSimulacoesPaginadasAsync(int pagina, int quantidadePorPagina, bool incluirParcelas)
+    public async Task<IEnumerable<RespostaSimulacao>> ObterSimulacoesPaginadasAsync(int pagina, int quantidadePorPagina, bool incluirParcelas)
     {
         try
         {
@@ -86,10 +88,10 @@ public class SimulacaoRepository
                 SELECT IdSimulacao as idSimulacao, 
                 CodigoProduto as codigoProduto, 
                 DescricaoProduto as descricaoProduto, TaxaJuros as taxaJuros, DataSimulacao as dataSimulacao
-                FROM RespostaSimutacao
+                FROM RespostaSimulacao
                 ORDER BY IdSimulacao DESC
                 LIMIT @Quantidade OFFSET @Offset";
-            var simulacoes = (await connection.QueryAsync<RespostaSimutacao>(sql, new { Quantidade = quantidadePorPagina, Offset = offset })).ToList();
+            var simulacoes = (await connection.QueryAsync<RespostaSimulacao>(sql, new { Quantidade = quantidadePorPagina, Offset = offset })).ToList();
 
             if (incluirParcelas)
             {
@@ -143,7 +145,7 @@ public class SimulacaoRepository
                 descricaoProduto, 
                 SUM(taxaJuros) as totalTaxaJuros, 
                 COUNT(*) as totalSimulacoes
-            FROM RespostaSimutacao
+            FROM RespostaSimulacao
             WHERE date(dataSimulacao) BETWEEN date(@Inicio) AND date(@Fim)
             GROUP BY date(dataSimulacao), codigoProduto, descricaoProduto
             ORDER BY date(dataSimulacao) DESC, codigoProduto
